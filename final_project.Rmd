@@ -1,0 +1,536 @@
+---
+title: "Data Visualization Final Project"
+author: "Dhananjay"
+date: "2023-04-13"
+output: html_document
+---
+
+## Question: Produce six or more different data visualizations to tell a story with data. State the objective of the narrative. provide effective visualizations supporting the objective. provide a rationale for how the choices made in the visualizations support the objective.
+
+Answer:
+
+I used the Suicides in India dataset from Kaggle. The dataset is downloaded from:
+
+https://www.kaggle.com/datasets/rajanand/suicides-in-india
+
+The objective of the narrative is to explore patterns and trends related to suicides in India. The dataset provides information on the number of suicides by various demographic factors such as age, gender, and state, as well as the causes of suicides and the means used to commit suicide. The narrative is to explore the trend of suicides in India based on age, gender, state, and various means applied to commit suicide.
+ 
+The end goal of the visualizations is to help communicate patterns and trends so that we can generate various insights from the data.
+
+
+## Understanding the dataset
+
+The dataset has State, Year, Gender, Age_group, Type_code, Type, and Total columns. The "State" column has 28 states and 7 union territories. The "Type_code" has five different measures: "Causes", "Education_Status", "Means_adopted", "Professional_Profile", and "Social_Status" and each Type_code has various variables to further define the data. The "Year" ranges from 2001-2012 and the 'Gender' column contains: "Male" and "Female".
+
+
+
+```{r}
+
+# Loading the required libraries
+library(ggplot2)
+library(tidyverse)
+
+# Reading the dataset
+suicidesData <- read.csv("Suicides in India 2001-2012.csv", header = TRUE, sep = ',')
+head(suicidesData)
+#summary(suicidesData)
+
+# Listing the unique values in the column
+unique(suicidesData$State)
+unique(suicidesData$Year)
+unique(suicidesData$Type_code)
+unique(suicidesData$Type)
+unique(suicidesData$Age_group)
+unique(suicidesData$Gender)
+
+
+
+```
+
+Detailed variables are:
+
+Age_group: "0-14"   "15-29"  "30-44"  "45-59"  "60+"    "0-100+"
+
+Gender: "Female" "Male"
+
+Year: 2001 2002 2003 2004 2005 2006 2007 2008 2009 2010 2011 2012
+
+States: "Andhra Pradesh" "Arunachal Pradesh" "Assam" "Bihar" "Chhattisgarh" "Goa" "Gujarat" "Haryana" "Himachal Pradesh" "Jammu & Kashmir" "Jharkhand" "Karnataka" "Kerala" "Madhya Pradesh" "Maharashtra" "Manipur" "Meghalaya" "Mizoram" "Nagaland" "Odisha" "Punjab" "Rajasthan" "Sikkim" "Tamil Nadu" "Tripura" "Uttar Pradesh" "Uttarakhand" "West Bengal"
+
+Union Terrioties (Uts): "A & N Islands" "Chandigarh" "D & N Haveli" "Daman & Diu" "Delhi (Ut)" "Lakshadweep" "Puducherry"
+
+Total: "Total (All India)" "Total (States)" "Total (Uts)"
+Type_code:"Education_Status" "Social_Status" (for Total)
+Age_group: "0-100+" for such Type_code
+
+
+Type_code: "Causes" "Education_Status" "Means_adopted" "Professional_Profile" "Social_Status"
+
+Type:
+"Causes":
+
+[1] "Illness (Aids/STD)"                            
+[2] "Bankruptcy or Sudden change in Economic"       
+[3] "Cancellation/Non-Settlement of Marriage"       
+[4] "Physical Abuse (Rape/Incest Etc.)"             
+[5] "Dowry Dispute"                                 
+[6] "Family Problems"                               
+[7] "Ideological Causes/Hero Worshipping"           
+[8] "Other Prolonged Illness"                       
+[9] "Property Dispute"                              
+[10] "Fall in Social Reputation"                     
+[11] "Illegitimate Pregnancy"                        
+[12] "Failure in Examination"                        
+[13] "Insanity/Mental Illness"                       
+[14] "Love Affairs"                                  
+[15] "Professional/Career Problem"                   
+[16] "Divorce"                                       
+[17] "Drug Abuse/Addiction"                          
+[18] "Not having Children(Barrenness/Impotency"      
+[19] "Causes Not known"                              
+[20] "Unemployment"                                  
+[21] "Other Causes (Please Specity)"                 
+[22] "Poverty"                                       
+[23] "Death of Dear Person"                          
+[24] "Cancer"                                        
+[25] "Suspected/Illicit Relation"                    
+[26] "Paralysis"
+[67] "Bankruptcy or Sudden change in Economic Status"
+[68] "Not having Children (Barrenness/Impotency"
+
+
+"Education_Status":
+
+[27] "Diploma"                                       
+[28] "No Education"                                  
+[29] "Post Graduate and Above"                       
+[30] "Middle"                                        
+[31] "Graduate"                                      
+[32] "Hr. Secondary/Intermediate/Pre-Universit"      
+[33] "Primary"                                       
+[34] "Matriculate/Secondary" 
+
+
+"Means_adopted":
+
+[35] "By Consuming Insecticides"                     
+[36] "By Hanging"                                    
+[37] "By Jumping from (Other sites)"                 
+[38] "By touching electric wires"                    
+[39] "By Machine"                                    
+[40] "By Fire/Self Immolation"                       
+[41] "By Jumping off Moving Vehicles/Trains"         
+[42] "By Other means (please specify)"               
+[43] "By Self Infliction of injury"                  
+[44] "By Over Alcoholism"                            
+[45] "By Consuming Other Poison"                     
+[46] "By coming under running vehicles/trains"       
+[47] "By Overdose of sleeping pills"                 
+[48] "By Jumping from (Building)"                    
+[49] "By Drowning"                                   
+[50] "By Fire-Arms"
+[69] "By Other means"
+
+
+"Professional_Profile":
+
+[51] "Retired Person"                                
+[52] "Unemployed"                                    
+[53] "Public Sector Undertaking"                     
+[54] "Service (Private)"                             
+[55] "House Wife"                                    
+[56] "Self-employed (Business activity)"             
+[57] "Professional Activity"                         
+[58] "Student"                                       
+[59] "Others (Please Specify)"                       
+[60] "Farming/Agriculture Activity"                  
+[61] "Service (Government)"
+
+
+"Social_Status":
+
+[62] "Married"                                       
+[63] "Seperated"                                     
+[64] "Widowed/Widower"                               
+[65] "Divorcee"                                      
+[66] "Never Married"
+
+
+
+## Visualization 1: Pie Chart showing the total suicides by Gender in India from 2001-2012
+
+The pie-chart is sufficient enough to show the composition of gender (male and female) in the contribution of suicides in India over 2001-2012. It gives us a brief summary and a direct insight into the data. 
+
+```{r}
+# Loading the required libraries
+library(ggplot2)
+library(tidyverse)
+library(scales)
+
+# Reading the dataset
+suicidesData <- read.csv("Suicides in India 2001-2012.csv", header = TRUE, sep = ',')
+
+# Filtering the data to exclude Total (All India), Total (States), and Total (Uts) from State column
+filteredSuicidesData <- suicidesData %>%
+  filter(!grepl("^Total", State))
+
+#head(filteredSuicidesData)
+
+# Grouping the suicide data by gender
+totalIndiaSuicidesByGenderData <- filteredSuicidesData %>%
+  group_by(Gender) %>%
+  summarize(totalSuicides = sum(Total), .groups = 'drop')
+
+#print(totalIndiaSuicidesByGenderData)
+
+# Creating a vector with the total number of suicides for each gender
+totalSuicidesByGender <- totalIndiaSuicidesByGenderData$totalSuicides
+
+# Calculating the percentage of suicides for each gender
+suicidesByGenderPercent <- percent(totalSuicidesByGender / sum(totalSuicidesByGender))
+
+# Creating a data frame with the gender labels and percentage values
+suicidePieData <- data.frame(Gender = totalIndiaSuicidesByGenderData$Gender, 
+                      Percent = suicidesByGenderPercent)
+
+# Defining the color encoding
+colorCode <- c("#E69F00", "#56B4E9")
+
+# Creating a pie chart with percentage labels and color encoding
+suicidePieChart <- ggplot(suicidePieData, aes(x = "", y = Percent, fill = Gender)) +
+  geom_bar(stat = "identity", color = "white", width = 1) +
+  coord_polar("y", start = 0) +
+  theme_void() +
+  ggtitle("Gender-Based Contribution to Suicide in India (2001-2012)") +
+  scale_fill_manual(values = colorCode) +
+  geom_text(aes(label = paste0(Gender, ": ", Percent)), position = position_stack(vjust =   0.5)) +
+  theme(plot.title = element_text(hjust = 0.5, size = 15, face = "bold"),
+        legend.position = "none")
+
+# Displaying the pie chart
+suicidePieChart
+
+
+```
+
+
+
+## Visualization 2: Line-Chart showing Suicide Trends by Gender over the Year(2001-2012) in India
+
+
+The line-chart is a good option to show the number of suicides based on gender in India over the years 2001-2012. It shows us two different line-plots: one each for male and female. 
+
+
+```{r}
+# Loading the required libraries
+library(tidyverse)
+library(ggplot2)
+library(RColorBrewer)
+
+# Reading the dataset
+suicidesData <- read.csv("Suicides in India 2001-2012.csv", header = TRUE, sep = ',', stringsAsFactors = FALSE)
+
+# Filtering the data to exclude Total (All India), Total (States), and Total (Uts) from State column
+filteredSuicidesData <- suicidesData %>%
+  filter(!grepl("^Total", State))
+
+# Grouping the data by Gender and Year
+suicidesByGenderYearData <- filteredSuicidesData %>%
+  group_by(Year, Gender) %>%
+  summarize(totalSuicides = sum(Total), .groups = 'drop')
+
+# Creating a line-chart 
+ggplot(suicidesByGenderYearData, aes(x=Year, y=totalSuicides, color=Gender)) +
+  geom_line() +
+  geom_point() +
+  xlab("Year") +
+  ylab("Total Suicides") +
+  ggtitle("Gender-Based Suicide Trends in India (2001-2012)") +
+  scale_x_continuous(limits = c(2001, 2012), breaks = seq(2001, 2012, 1)) +
+  scale_y_continuous(limits = c(90000, 450000), breaks = seq(90000, 500000, 90000)) 
+  
+  
+
+```
+
+
+
+
+## Visualization 3: Heatmap showing Suicide Trends in the States of India for the Year(2001-2012)
+
+
+The heatmap is a good option to show the number of suicides based on 28 states in India over the years 2001-2012. Since the data is very big to fit in a bar-chart, heatmap gives us the perfect visualization to understand the suicide trends in various states.
+
+
+```{r}
+
+# Loading the required libraries
+library(ggplot2)
+library(reshape2)
+library(dplyr)
+
+# Reading the dataset
+suicidesData <- read.csv("Suicides in India 2001-2012.csv", header = TRUE, sep = ',', stringsAsFactors = FALSE)
+
+# Filtering the data to exclude Total (All India), Total (States), Total (Uts) and Union Territories from State column
+
+filteredSuicidesData <- suicidesData %>%
+  filter(!grepl("^Total", State),
+         !State %in% c("A & N Islands", "Chandigarh", "D & N Haveli", "Daman & Diu", "Delhi (Ut)", "Lakshadweep", "Puducherry"))
+
+# Reshaping the data
+meltedSuicidesData <- melt(filteredSuicidesData, id.vars=c("Year", "State"), measure.vars=c("Total"), variable.name = "Type", value.name = "totalSuicides")
+
+# Creating the heatmap
+ggplot(meltedSuicidesData, aes(x=Year, y=State, fill=totalSuicides)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient(low = "#f6f6f6", high = "#008080") +
+  labs(x="Year", 
+       y="State", 
+       title="State-Based Suicide Trends in India (2001-2012)",
+       fill="Total Suicides")  +
+  scale_x_continuous(limits = c(2000, 2013), breaks = seq(2001, 2012, 1)) +
+  theme(axis.text.x = element_text(angle = 30, hjust = 1))
+
+```
+
+
+
+
+
+## Visualization 4: Treemap showing Suicide Trends in the Union Territories of India for the Year(2001-2012)
+
+
+The treemap is a good option to show the number of suicides based on 7 union territories in India over the years 2001-2012. Since there is only 7 variables, treemap gives us the perfect visualization to understand the suicide trends in various union territories.
+
+
+
+```{r}
+
+# Loading the required libraries
+library(tidyverse)
+library(scales)
+library(ggplot2)
+library(treemap)
+library(RColorBrewer)
+
+# Reading the dataset
+suicidesData <- read.csv("Suicides in India 2001-2012.csv", header = TRUE, sep = ',', stringsAsFactors = FALSE)
+
+# Filtering the data to select only Union Territories
+filteredSuicidesData <- suicidesData %>%
+  filter(State %in% c("A & N Islands", "Chandigarh", "D & N Haveli", "Daman & Diu", "Delhi (Ut)", "Lakshadweep", "Puducherry"))
+
+
+# Summarizing the data by state and year
+unionTerritorySummarySuicidesData <- aggregate(Total ~ State + Year, filteredSuicidesData, sum)
+
+# Summarize the data by state
+unionTerritoryTotalSummarySuicidesData <- aggregate(Total ~ State, unionTerritorySummarySuicidesData, sum)
+
+# Creating a treemap
+
+treemap(unionTerritoryTotalSummarySuicidesData,
+        index = "State",
+        vSize = "Total",
+        type = "index",
+        palette = "Paired",
+        title = "Union Territory-Based Suicide Trends in India (2001-2012)",
+        fontsize.title = 14,
+        border.col = "black",
+        border.lwds = 4,
+        fontsize.labels = 11.7,
+        fontcolor.labels = "white",
+        fontface.labels = 2,
+        #inflate.labels = F
+) 
+  
+
+```
+
+
+
+
+
+
+## Visualization 5: Bar Chart showing the  number of suicide cases by age group in India over time
+
+
+The bar-chart is a good visualization to show the number of suicide cases by age group in India over the years 2001-2012. It gives us a brief summary on the no of suicides in various age intervals data.
+
+
+```{r}
+
+# Loading the required libraries
+library(ggplot2)
+library(tidyverse)
+
+# Reading the dataset
+suicidesData <- read.csv("Suicides in India 2001-2012.csv", header = TRUE, sep = ',', stringsAsFactors = FALSE)
+
+# Filtering the data to exclude Total (All India), Total (States), and Total (Uts) from State column and age_group 0-100+
+filteredSuicidesData <- suicidesData %>%
+  filter(!grepl("^Total", State),
+         !Type_code %in% c("Education_Status", "Social_Status"))  
+
+# Grouping by age and calculating total suicides
+suicidesByAgeData <- filteredSuicidesData %>%
+  group_by(Age_group) %>%
+  summarize(totalSuicides = sum(Total), .groups = 'drop')
+
+# Defining custom color encoding
+colorCode <- c("#FFC857", "#E9724C", "#C5283D", "#AD5475", "#3F88C5")
+
+# Creating the bar plot
+ggplot(suicidesByAgeData, aes(x = Age_group, y = totalSuicides, fill = Age_group)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = colorCode) +
+  labs(title = "Suicide Cases by Age Group in India (2001-2012)",
+       x = "Age Group",
+       y = "Total Suicides")
+
+
+```
+
+
+## Visualization 6: Grouped Bar Chart showing the  number of suicide cases by age group and gender in India over time
+
+
+A grouped bar-chart is a good visualization to show the number of suicide cases by age group and gender in India over the years 2001-2012. It gives us a clear look into on the no of suicides based on gender in various age intervals data.
+
+
+```{r}
+
+# Loading the required libraries
+library(ggplot2)
+library(tidyverse)
+
+# Reading the dataset
+suicidesData <- read.csv("Suicides in India 2001-2012.csv", header = TRUE, sep = ',', stringsAsFactors = FALSE)
+
+# Filtering the data to exclude Total (All India), Total (States), and Total (Uts) from State column and age_group 0-100+
+filteredSuicidesData <- suicidesData %>%
+  filter(!grepl("^Total", State),
+         !Type_code %in% c("Education_Status", "Social_Status"))  
+
+# Grouping by age and calculating total suicides
+suicidesByAgeGenderData <- filteredSuicidesData %>%
+  group_by(Age_group, Gender) %>%
+  summarize(totalSuicides = sum(Total), .groups = 'drop')
+
+# Creating the bar plot
+ggplot(suicidesByAgeGenderData, aes(x = Age_group, y = totalSuicides, fill = Gender)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  scale_fill_manual(values = c("#E9724C", "#3F88C5"), labels = c("Female", "Male")) +
+  labs(title = "Total Suicides by Age Group and Gender in India (2001-2012)",
+       x = "Age Group",
+       y = "Total Suicides",
+       fill = "Gender")
+
+```
+
+
+
+
+## Visualization 7: Faceted-Bar Chart showing the top five Indian States with the highest number of suicide cases by age group and gender over time
+
+
+A faceted bar-chart is a good visualization to show the top five Indian States with the highest number of suicide cases by age group and gender in India over the years 2001-2012. It gives us a faceted bar-plot with one each for each age-group. It is easy to look into and understand the visualization.
+
+
+
+```{r}
+
+# Loading the required libraries
+library(ggplot2)
+library(tidyverse)
+
+# Reading the dataset
+suicidesData <- read.csv("Suicides in India 2001-2012.csv", header = TRUE, sep = ',', stringsAsFactors = FALSE)
+
+# Filtering the data to exclude Total (All India), Total (States), and Total (Uts) from State column
+# Filtering the data to exclude Age_group 0-14 and 0-100+
+
+filteredSuicidesData <- suicidesData %>%
+  filter(!grepl("^Total", State),
+         !Type_code %in% c("Education_Status", "Social_Status"),
+         !Age_group %in% c("0-14"))  
+
+# Finding the States with highest suicide cases
+topStatesSuicideData <- filteredSuicidesData %>%
+  group_by(State) %>%
+  summarize(totalSuicides = sum(Total), .groups = 'drop') %>%
+  arrange(desc(totalSuicides)) %>%
+  top_n(5, totalSuicides)
+
+# Grouping the suicide cases by gender and age_group
+suicidesByGenderAgeData <- filteredSuicidesData %>%
+  filter(State %in% topStatesSuicideData$State) %>%
+  group_by(State, Gender, Age_group) %>%
+  summarize(totalSuicides = sum(Total), .groups = 'drop')
+
+# Plotting
+ggplot(suicidesByGenderAgeData, aes(x=State, y=totalSuicides, fill=Gender)) +
+  geom_bar(stat="identity") +
+  scale_fill_manual(values=c("red", "blue")) +
+  xlab("State") +
+  ylab("Total Suicides") +
+  ggtitle("Indian States with Highest Suicide Cases by Gender and Age Group") +
+  facet_wrap(~Age_group, ncol=1)
+
+
+```
+
+
+
+## Visualization 8: Scatter Plot showing the top eight Indian States with the highest number of suicide cases by age group and Type_code over time
+
+
+A faceted scatter plot is a good visualization to show the top eight Indian States with the highest number of suicide cases by age group and Type_code in India over the years 2001-2012. It gives us a faceted scatter plot for Type_codes with a scatter plot for each age-group inside it for all the states. This visualization supports our narrative as it provides easy to understand the data.
+
+```{r}
+
+# Loading the required libraries
+library(ggplot2)
+library(tidyverse)
+library(RColorBrewer)
+
+# Reading the dataset
+suicidesData <- read.csv("Suicides in India 2001-2012.csv", header = TRUE, sep = ',', stringsAsFactors = FALSE)
+
+# Filtering the data to exclude Total (All India), Total (States), and Total (Uts) from State column
+# Filtering the data to exclude Age_group 0-100+
+
+filteredSuicidesData <- suicidesData %>%
+  filter(!grepl("^Total", State),
+         !Age_group %in% c("0-100+"))  
+
+# Finding the States with highest suicide cases
+topStatesSuicideData <- filteredSuicidesData %>%
+  group_by(State) %>%
+  summarize(totalSuicides = sum(Total), .groups = 'drop') %>%
+  arrange(desc(totalSuicides)) %>%
+  top_n(8, totalSuicides)
+
+# Grouping the suicide cases by age_group and Type_code
+suicidesByAgeTypeCodeData <- filteredSuicidesData %>%
+  filter(State %in% topStatesSuicideData$State) %>%
+  group_by(State, Age_group, Type_code) %>%
+  summarize(totalSuicides = sum(Total), .groups = 'drop')
+
+# Plotting
+ggplot(suicidesByAgeTypeCodeData, aes(x=State, y=totalSuicides, color=Age_group)) +
+  geom_point(size=3) +
+  scale_fill_brewer(palette = "Set2") +
+  xlab("State") +
+  ylab("Total Suicides") +
+  ggtitle("Indian States with Highest Suicide Cases by Code Type and Age Group") +
+  facet_wrap(~Type_code, ncol=1) +
+  labs(color = "Age Group") +
+  theme(axis.text.x = element_text(angle = 20, hjust = 1))
+
+
+```
+
+
+
